@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load wagtailimages_tags %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<h1>Product Detailsssss</h1>
+
+<div id="product-detail"></div>
+
+<script>
+    const BASE_URL = 'http://127.0.0.1:8000';
+
+    async function fetchProductDetails(productSlug) {
+        const productDetailElement = document.getElementById('product-detail');
+        productDetailElement.textContent = 'Loading...';
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/v2/product/products/${encodeURIComponent(productSlug)}`);
+
+            if (!response.ok) {
+                throw new Error(`Error fetching product details: ${response.status}`);
+            }
+
+            const product = await response.json();
+            displayProductDetails(product);
+        } catch (error) {
+            productDetailElement.textContent = 'Failed to load product details. Please try again later.';
+        }
+    }
+
+    function displayProductDetails(product) {
+        const productDetailElement = document.getElementById('product-detail');
+        productDetailElement.innerHTML = '';
+        productDetailElement.style.display = 'block';
+
+        if (product.result === 'success' && product.records) {
+            const productRecord = product.records;
+            const content = productRecord.content || [];
+            const mainTitle = productRecord.title || 'No Title Found';
+
+            productDetailElement.innerHTML += `<h3>${mainTitle}</h3>`;
+
+            if (content.length > 0 && content[0].fields) {
+                const productDetails = content[0].fields;
+
+                const titleMain = productDetails.main_title?.value || 'No title available.';
+                productDetailElement.innerHTML += `<h1>${titleMain}</h1>`;
+
+                const description = productDetails.description?.value || 'No description available.';
+                productDetailElement.innerHTML += `<p>${description}</p>`;
+            // category part
+            if (productDetails.category && productDetails.category.value) {
+            console.log("Category Value:", productDetails.category.value); 
+            const category = productDetails.category.value.replace(/<ListValue: |[\[\]'>]/g, '').trim();
+            if (category) {
+                productDetailElement.innerHTML += `<h4>Category:</h4><p>${category}</p>`;
+            } else {
+                productDetailElement.innerHTML += '<h4>Category:</h4><p>No category available.</p>';
+            }
+        }
+            // tags---------------------
+            if (productDetails.tags && productDetails.tags.value) {
+                console.log("Tags Value:", productDetails.tags.value); 
+                const tagsArray = productDetails.tags.value.replace(/<ListValue: |[\[\]'>]/g, '').split(',').map(tag => tag.trim()).filter(tag => tag);
+                
+                if (tagsArray.length > 0) {
+                    productDetailElement.innerHTML += `<h4>Tags:</h4><p>${tagsArray.join(', ')}</p>`;
+                } else {
+                    productDetailElement.innerHTML += '<h4>Tags:</h4><p>No tags available.</p>';
+                }
+            }
+        
+
+                
+             // available size---------------------
+            if (productDetails.available_size && productDetails.available_size.value) {
+                console.log("Available Sizes Value:", productDetails.available_size.value); 
+                const sizesArray = productDetails.available_size.value.replace(/<ListValue: |[\[\]'>]/g, '').split(',').map(size => size.trim()).filter(size => size);
+                if (sizesArray.length > 0) {
+                    productDetailElement.innerHTML += '<h4>Available Sizes:</h4>';
+                    productDetailElement.innerHTML += `<p>${sizesArray.join(', ')}</p>`;
+                } else {
+                    productDetailElement.innerHTML += '<h4>Available Sizes:</h4><p>No sizes available.</p>';
+                }
+            }
+               
+                // Image slider-----------------------------
+                if (productDetails.images && productDetails.images.value) {
+                    const imagesArray = productDetails.images.value.split(',').map(img => {
+                        const match = img.match(/<Image: (.*?)>/);
+                        return match ? match[1].trim() : null;
+                    }).filter(id => id);
+
+                    const validImageUrls = imagesArray.map(id => constructImageUrl(id));
+                    createImageSlider(productDetailElement, validImageUrls);
+                }
+
+                
+       
+
+            } else {
+                productDetailElement.innerHTML += '<p>No content available for this product.</p>';
+            }
+        } else {
+            productDetailElement.innerHTML += '<p>Product details not available.</p>';
+        }
+    }
+
+    function constructImageUrl(imageId) {
+        return `http://127.0.0.1:8000/media/original_images/${encodeURIComponent(imageId)}.jpg`;
+    }
+
+    function createImageSlider(container, imageUrls) {
+        if (imageUrls.length === 0) {
+            container.innerHTML += '<p>No images available for this product.</p>';
+            return;
+        }
+
+        const slider = document.createElement('div');
+        slider.className = 'image-slider';
+        container.appendChild(slider);
+
+        imageUrls.forEach((url, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            slide.style.display = index === 0 ? 'block' : 'none'; 
+            slide.innerHTML = `<img src="${url}" alt="Product Image ${index + 1}" />`;
+            slider.appendChild(slide);
+        });
+
+        initializeSlider(slider);
+    }
+
+    function initializeSlider(slider) {
+        const slides = slider.getElementsByClassName('slide');
+        let currentIndex = 0;
+
+        if (slides.length === 0) {
+            console.error("No slides found!");
+            return;
+        }
+
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.className = 'prev';
+        slider.appendChild(prevButton);
+
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.className = 'next';
+        slider.appendChild(nextButton);
+
+        prevButton.addEventListener('click', () => {
+            slides[currentIndex].style.display = 'none';
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            slides[currentIndex].style.display = 'block';
+        });
+
+        nextButton.addEventListener('click', () => {
+            slides[currentIndex].style.display = 'none';
+            currentIndex = (currentIndex + 1) % slides.length;
+            slides[currentIndex].style.display = 'block';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const pathname = window.location.pathname;
+        const segments = pathname.split('/');
+        const productSlug = segments[segments.length - 2];
+
+        fetchProductDetails(productSlug);
+    });
+</script>
+
+
+<style>
+body {
+font-family: Arial, sans-serif;
+line-height: 1.6;
+background-color: #f4f4f4;
+margin: 0;
+padding: 20px;
+}
+
+#product-detail {
+background: white;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.image-slider {
+position: relative;
+width: 100%;
+max-width: 600px; 
+margin: auto; 
+overflow: hidden; 
+border: 1px solid #ddd; 
+border-radius: 8px; 
+}
+
+.slide {
+display: none; 
+}
+
+.slide img {
+width: 100%; 
+height: auto; 
+}
+
+button {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+background-color: rgba(255, 255, 255, 0.8);
+border: 1px solid #ddd; 
+border-radius: 5px; 
+cursor: pointer;
+padding: 10px 15px; 
+font-size: 16px;
+z-index: 1; 
+}
+
+.prev {
+left: 10px;
+}
+
+.next {
+right: 10px; 
+}
+
+
+h4 {
+margin-top: 20px; 
+}
+
+ul {
+list-style-type: disc; 
+padding-left: 20px; 
+}
+
+ul li {
+margin-bottom: 5px; 
+}
+
+@media (max-width: 600px) {
+button {
+    padding: 8px 10px; 
+    font-size: 14px; 
+}
+}
+
+</style>
+
+
+
+
+
+
+{% endblock %}
