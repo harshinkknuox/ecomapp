@@ -3,7 +3,7 @@
 {% load wagtailcore_tags %}
 
 {% block content %}
-<h1>Product Detailsssss</h1>
+<h1 class="text-center">Product Details</h1>
 
 <div id="product-detail"></div>
 
@@ -38,7 +38,7 @@
             const content = productRecord.content || [];
             const mainTitle = productRecord.title || 'No Title Found';
 
-            productDetailElement.innerHTML += `<h3>${mainTitle}</h3>`;
+            
 
             if (content.length > 0 && content[0].fields) {
                 const productDetails = content[0].fields;
@@ -141,12 +141,12 @@
         }
 
         const prevButton = document.createElement('button');
-        prevButton.textContent = 'Previous';
+        prevButton.textContent = '<';
         prevButton.className = 'prev';
         slider.appendChild(prevButton);
 
         const nextButton = document.createElement('button');
-        nextButton.textContent = 'Next';
+        nextButton.textContent = '>';
         nextButton.className = 'next';
         slider.appendChild(nextButton);
 

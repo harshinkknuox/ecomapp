@@ -1,40 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
 {% load wagtailcore_tags %}
-<link rel="stylesheet" href="{% static 'home.css' %}">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home_page.css' %}">
+{% endblock extra_css %}
 {% block content %}
 
-<h1>Product Listing</h1>
-<label for="category-select">Product Category:</label>
-<select id="category-select" onchange="filterByCategory()">
-    <option value="all">All Categories</option>
-</select>
-<h2>FILTER PRODUCTS</h2>
-    <ul id="name-checkboxes">
-        <li><input type="checkbox" id="name1" value="Dressings" onchange="filterByName()"><label for="name1">Dressings</label></li>
-        <li><input type="checkbox" id="name2" value="Ketchup" onchange="filterByName()"><label for="name2">Ketchup</label></li>
-        <li><input type="checkbox" id="name3" value="Mayonnaise" onchange="filterByName()"><label for="name3">Mayonnaise</label></li>
-        <li><input type="checkbox" id="name4" value="Mustard" onchange="filterByName()"><label for="name4">Mustard</label></li>
-        <li><input type="checkbox" id="name5" value="Olives" onchange="filterByName()"><label for="name5">Olives</label></li>
-        <li><input type="checkbox" id="name6" value="Peppers" onchange="filterByName()"><label for="name6">Peppers</label></li>
-        <li><input type="checkbox" id="name7" value="Pickles" onchange="filterByName()"><label for="name7">Pickles</label></li>
-        <li><input type="checkbox" id="name8" value="Almond" onchange="filterByName()"><label for="name8">Almond</label></li>
-        <li><input type="checkbox" id="name9" value="BBQ" onchange="filterByName()"><label for="name9">BBQ</label></li>
-    </ul>
-    <h2>FILTER BY CLAIM</h2>
-    <ul id="tag-checkboxes">
-        {% comment %} <li><input type="checkbox" id="tag1" value="All" onchange="filterByTags()"><label for="tag1">All</label></li> {% endcomment %}
-        <li><input type="checkbox" id="tag2" value="Gluten and Dairy-Free" onchange="filterByTags()"><label for="tag2">Gluten and Dairy-Free</label></li>
-        <li><input type="checkbox" id="tag3" value="Dairy Free" onchange="filterByTags()"><label for="tag3">Dairy Free</label></li>
-        <li><input type="checkbox" id="tag4" value="Gluten free" onchange="filterByTags()"><label for="tag4">Gluten free</label></li>
-        <li><input type="checkbox" id="tag5" value="Vegetarian" onchange="filterByTags()"><label for="tag5">Vegetarian</label></li>
-    </ul>
-    
+<div class="m-4">
+    <h1 class="text-center">Products</h1>
 
-<div id="product-list"></div>
-<div class="card-container" id="card-container">
+    <div class="row mt-5">
+        <!-- Filter Section -->
+        <div class="col-4">
+            <div class="filter-section">
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <h2>Product Category:</h2>
+                        <ul id="category-list" class="list-unstyled">
+                            <li><a href="#" data-value="all" onclick="filterByCategory('all')">All Categories</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-12 mt-3">
+                        <h2>Filter Products</h2>
+                        <ul id="name-checkboxes" class="list-unstyled">
+                            <li><input type="checkbox" id="name1" value="Dressing" onchange="filterByName()"><label for="name1"> Dressings</label></li>
+                            <li><input type="checkbox" id="name2" value="Ketchup" onchange="filterByName()"><label for="name2"> Ketchup</label></li>
+                            <li><input type="checkbox" id="name3" value="Mayonnaise" onchange="filterByName()"><label for="name3"> Mayonnaise</label></li>
+                            <li><input type="checkbox" id="name4" value="Mustard" onchange="filterByName()"><label for="name4"> Mustard</label></li>
+                            <li><input type="checkbox" id="name5" value="Olive" onchange="filterByName()"><label for="name5"> Olives</label></li>
+                            <li><input type="checkbox" id="name6" value="Pepper" onchange="filterByName()"><label for="name6"> Peppers</label></li>
+                            <li><input type="checkbox" id="name7" value="Pickle" onchange="filterByName()"><label for="name7"> Pickles</label></li>
+                            <li><input type="checkbox" id="name8" value="Almond" onchange="filterByName()"><label for="name8"> Almond</label></li>
+                            <li><input type="checkbox" id="name9" value="BBQ" onchange="filterByName()"><label for="name9"> BBQ</label></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-12 mt-2">
+                        <h2>Filter by Claim</h2>
+                        <ul id="tag-checkboxes" class="list-unstyled">
+                            <li><input type="checkbox" id="tag2" value="Gluten and Dairy-Free" onchange="filterByTags()"><label for="tag2"> Gluten and Dairy-Free</label></li>
+                            <li><input type="checkbox" id="tag3" value="Dairy Free" onchange="filterByTags()"><label for="tag3"> Dairy Free</label></li>
+                            <li><input type="checkbox" id="tag4" value="Gluten free" onchange="filterByTags()"><label for="tag4"> Gluten free</label></li>
+                            <li><input type="checkbox" id="tag5" value="Vegetarian" onchange="filterByTags()"><label for="tag5"> Vegetarian</label></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product List Section -->
+        <div class="col-8">
+            <div id="product-list" class="row gy-4">
+                <div class="card-container" id="card-container">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
 
 <script>
     let nameFilters = [];
@@ -46,6 +69,7 @@
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             
             const data = await response.json();
+            console.log('Fetched categories:', data);
             const categories = data.records || [];
             populateCategoryDropdown(categories);
         } catch (error) {
@@ -54,14 +78,23 @@
     }
 
     function populateCategoryDropdown(categories) {
-        const categoryDropdown = document.getElementById('category-select');
-        categoryDropdown.innerHTML = '<option value="all">All Categories</option>'; 
-
+        const categoryList = document.getElementById('category-list');
+        
+        // Clear existing items (except "All Categories")
+        categoryList.innerHTML = '<li><a href="#" data-value="all" onclick="filterByCategory(\'all\')">All Categories</a></li>';
+    
         categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.slug || 'unknown';
-            option.textContent = category.title || 'Unknown Category';
-            categoryDropdown.appendChild(option);
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = "#";
+            a.dataset.value = category.slug || 'unknown';
+            a.textContent = category.title || 'Unknown Category';
+            
+            // Set click event to filter by selected category
+            a.onclick = function() { filterByCategory(a.dataset.value); };
+            
+            li.appendChild(a);
+            categoryList.appendChild(li);
         });
     }
 
@@ -81,7 +114,6 @@
             if (tagFilters.length > 0) {
                 params.push(`tag=${tagFilters.join(',')}`); 
             }
-            
 
             if (params.length > 0) {
                 url += `?${params.join('&')}`;
@@ -96,11 +128,12 @@
             displayProductList(data.records || []); 
         } catch (error) {
             console.error('Error fetching product list:', error);
-            document.getElementById('card-container').innerHTML = '<p>No products available under this category</p>';
+            document.getElementById('card-container').innerHTML = '<p>No products available here. Comeback Later..!!!!</p>';
         }
     }
 
     function displayProductList(products) {
+        console.log("---------",products)
         const productList = document.getElementById('card-container');
         productList.innerHTML = ''; 
 
@@ -114,13 +147,13 @@
             productCard.className = 'product-card';
 
             const productContent = product.content[0]?.fields || {};
-            {% comment %} const descriptionHtml = productContent.description?.value || 'No description available.'; {% endcomment %}
+            const availablesizeHtml = parseAvailableSize(productContent.available_size?.value || 'No Size available.');
 
             const productImage = document.createElement('img');
             if (productContent.images && productContent.images.value) {
                 const imagesArray = productContent.images.value.match(/<Image: (.*?)>/g) || [];
                 const imageIds = imagesArray.map(img => img.replace('<Image: ', '').replace('>', '').trim());
-
+                console.log("imageIds---",productContent)
                 productImage.src = imageIds.length > 0 ? constructImageUrl(imageIds[0]) : 'https://via.placeholder.com/300x150';
             } else {
                 productImage.src = 'https://via.placeholder.com/300x150';
@@ -133,51 +166,47 @@
             productTitle.textContent = product.title || 'Untitled';
             productTitle.className = 'product-title';
             productCard.appendChild(productTitle);
-
-            {% comment %} const productDescription = document.createElement('p');
-            productDescription.innerHTML = descriptionHtml;
-            productDescription.className = 'product-description';
-            productCard.appendChild(productDescription); {% endcomment %}
-
-            const viewDetailsButton = document.createElement('button');
-            viewDetailsButton.textContent = 'View Details';
-            viewDetailsButton.className = 'btn btn-primary';
-            viewDetailsButton.onclick = () => {
+            productTitle.onclick = () => {
                 const productSlug = (product.title || '').replace(/\s+/g, '-').toLowerCase();
                 const categorySlug = (product.content[0]?.fields.category?.value || '').toLowerCase();
                 window.location.href = getProductDetailsUrl(categorySlug, productSlug);
             };
-            productCard.appendChild(viewDetailsButton);
+
+            const productAvailableSize = document.createElement('p');
+            productAvailableSize.innerHTML = availablesizeHtml;
+            productAvailableSize.className = 'product-available-size';
+            productCard.appendChild(productAvailableSize); 
 
             productList.appendChild(productCard);
         });
     }
 
-    function filterByCategory() {
-        const selectedCategory = document.getElementById('category-select').value;
-        console.log(`Selected category: ${selectedCategory}`);
+    function filterByCategory(selectedCategory) {
         fetchProductList([selectedCategory]);
+        const categoryLinks = document.querySelectorAll('#category-list a');
+        categoryLinks.forEach(link => link.classList.remove('active'));
+        const selectedLink = Array.from(categoryLinks).find(link => link.dataset.value === selectedCategory);
+        if (selectedLink) {
+            selectedLink.classList.add('active');
+        }
     }
 
     function filterByTags() {
         const checkboxes = document.querySelectorAll('#tag-checkboxes input[type="checkbox"]:checked');
         tagFilters = Array.from(checkboxes).map(checkbox => checkbox.value);
-        console.log('Selected tags:', tagFilters);
+        console.log('Selected tags-----:', tagFilters);
         filterProducts();
     }
 
     function filterByName() {
         const nameCheckboxes = document.querySelectorAll('#name-checkboxes input[type="checkbox"]:checked');
         nameFilters = Array.from(nameCheckboxes).map(checkbox => checkbox.value);
-
-        console.log('Selected name filters:', nameFilters);
         filterProducts();
     }
 
     function filterProducts() {
-        const selectedCategory = document.getElementById('category-select').value;
+        const selectedCategory =  document.querySelector('#category-list a.active')?.dataset.value || 'all';
         const selectedCategories = selectedCategory === 'all' ? ['all'] : [selectedCategory];
-
         console.log('Applying filters - Categories:', selectedCategories, 'Names:', nameFilters, 'Tags:', tagFilters);
         fetchProductList(selectedCategories);
     }
@@ -190,61 +219,19 @@
         return `http://127.0.0.1:8000/media/original_images/${encodeURIComponent(imageId)}.jpg`;
     }
 
+    function parseAvailableSize(sizeString) {
+        const match = sizeString.match(/\[(.*?)\]/);
+        if (match) {
+            const sizes = match[1].split(',').map(item => item.trim().replace(/['"]/g, ''));
+            return `<strong>Available Sizes:</strong> ${sizes.join(', ')}`;
+        }
+        return sizeString;
+    }
+
     window.onload = function() {
         fetchCategories(); 
         fetchProductList(['all']); 
     };
 </script>
-
-
-<style>
-    .card-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .product-card {
-        border: 1px solid #ddd;
-        padding: 16px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 300px;
-        text-align: center;
-        margin-bottom: 16px;
-    }
-    
-    .product-image {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 16px;
-    }
-
-    .product-title {
-        font-size: 18px;
-        margin-bottom: 8px;
-    }
-
-    .product-description {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 16px;
-    }
-
-    .btn {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    .btn:hover {
-        background-color: #0056b3;
-    }
-</style>
-
 
 {% endblock %}

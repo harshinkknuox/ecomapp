@@ -29,6 +29,7 @@ class ProductPageSerializer(serializers.ModelSerializer):
                 }
                 content_data.append(details)
         return content_data
+    
     def get_images(self, block):
         images_data = []
         images = block.value.get('images', [])
@@ -51,8 +52,6 @@ class ProductPageSerializer(serializers.ModelSerializer):
                     "alt": image_block.default_alt_text,
                 }
         return None
-
-    
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

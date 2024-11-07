@@ -19,45 +19,13 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
         }
         return group_serializer.get(self.action, self.serializer_class)
 
-    # def get_queryset(self):
-    #     queryset = ProductPage.objects.live()
-        
-    #     name_filter = self.request.query_params.get('name')
-    #     if name_filter:
-    #         queryset = queryset.filter(title__icontains=name_filter)
-
-    #     category_slug = self.request.query_params.get('category', None)
-    #     if category_slug:
-    #         category_slug = category_slug.rstrip('/')
-    #         try:
-    #             category = ProductCategory.objects.get(slug__iexact=category_slug)
-    #             queryset = queryset.child_of(category)
-    #         except ProductCategory.DoesNotExist:
-    #             return ProductPage.objects.none()
-    #     return queryset
-   
 
     def get_queryset(self):
         queryset = ProductPage.objects.live()
-
-        # name filter ----------------------------------------- 
+        print("get_content,11111",queryset)
         name_filter = self.request.query_params.get('name')
         if name_filter:
             queryset = queryset.filter(title__icontains=name_filter)
-
-       # Tag filter
-        # tag_filter = self.request.query_params.get('tag')
-        # if tag_filter:
-        #     filtered_products = []
-        #     for product in queryset:
-        #         for block in product.content:
-        #             if block.block_type == 'product_details':
-        #                 tags = block.value['tags'] 
-        #                 if tag_filter in tags:  
-        #                     filtered_products.append(product)
-        #                     break 
-
-        #     queryset = queryset.filter(id__in=[product.id for product in filtered_products])
 
         tag_filter = self.request.query_params.get('tag') 
         print("tag_filter--------------", tag_filter)  
@@ -93,6 +61,7 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
             limit = int(request.GET.get('limit', PAGINATION_PER_PAGE))
             page = int(request.GET.get('page', 1))
             queryset = self.get_queryset()
+            print("listqurysett,",queryset)
             if not queryset.exists():
                 return Response({"result": "failure", "message": "No products found."}, status=status.HTTP_404_NOT_FOUND)
 

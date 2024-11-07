@@ -8,8 +8,7 @@ from product.models import ProductPage
 class ProductCategory(Page):
     cate_title = models.CharField(max_length=255,blank=True,null=True)
     content_panels = Page.content_panels + [
-        FieldPanel("cate_title"),
-       
+        FieldPanel("cate_title"), 
     ]
 
     parent_page_types = ['home.HomePage']
