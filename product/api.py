@@ -31,7 +31,6 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
         print("tag_filter--------------", tag_filter)  
         if tag_filter:
             print("inside tag filter--------------", tag_filter)
-
             tag_filter_list = [tag.strip() for tag in tag_filter.split(',')]
 
             filtered_products = []
@@ -42,7 +41,6 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
                         if any(tag in tags for tag in tag_filter_list):  
                             filtered_products.append(product)
                             break  
-
             queryset = queryset.filter(id__in=[product.id for product in filtered_products])
 
         category_slug = self.request.query_params.get('category')

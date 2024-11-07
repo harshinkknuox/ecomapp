@@ -5,13 +5,20 @@
 {% block content %}
 <h1 class="text-center">Product Details</h1>
 
-<div id="product-detail"></div>
+<div class="row" id="product-detail">
+    <div class="col-12 col-md-6" id="product-info">
+       
+    </div>
+    <div class="col-12 col-md-6" id="product-image">
+        
+    </div>
+</div>
 
 <script>
     const BASE_URL = 'http://127.0.0.1:8000';
 
     async function fetchProductDetails(productSlug) {
-        const productDetailElement = document.getElementById('product-detail');
+        const productDetailElement = document.getElementById('product-info');
         productDetailElement.textContent = 'Loading...';
 
         try {
@@ -29,8 +36,10 @@
     }
 
     function displayProductDetails(product) {
-        const productDetailElement = document.getElementById('product-detail');
+        const productDetailElement = document.getElementById('product-info');
+        const productImageElement = document.getElementById('product-image');
         productDetailElement.innerHTML = '';
+        productImageElement.innerHTML = '';
         productDetailElement.style.display = 'block';
 
         if (product.result === 'success' && product.records) {
@@ -48,26 +57,22 @@
 
                 const description = productDetails.description?.value || 'No description available.';
                 productDetailElement.innerHTML += `<p>${description}</p>`;
-            // category part
+            
+                // category part
             if (productDetails.category && productDetails.category.value) {
             console.log("Category Value:", productDetails.category.value); 
             const category = productDetails.category.value.replace(/<ListValue: |[\[\]'>]/g, '').trim();
-            if (category) {
-                productDetailElement.innerHTML += `<h4>Category:</h4><p>${category}</p>`;
-            } else {
-                productDetailElement.innerHTML += '<h4>Category:</h4><p>No category available.</p>';
+            productDetailElement.innerHTML += `<h4>Category:</h4><p>${category || 'No category available.'}</p>`;
+            
             }
-        }
+
             // tags---------------------
             if (productDetails.tags && productDetails.tags.value) {
                 console.log("Tags Value:", productDetails.tags.value); 
                 const tagsArray = productDetails.tags.value.replace(/<ListValue: |[\[\]'>]/g, '').split(',').map(tag => tag.trim()).filter(tag => tag);
+                productDetailElement.innerHTML += `<h4>Tags:</h4><p>${tagsArray.join(', ') || 'No tags available.'}</p>`;
+
                 
-                if (tagsArray.length > 0) {
-                    productDetailElement.innerHTML += `<h4>Tags:</h4><p>${tagsArray.join(', ')}</p>`;
-                } else {
-                    productDetailElement.innerHTML += '<h4>Tags:</h4><p>No tags available.</p>';
-                }
             }
         
 
@@ -76,12 +81,8 @@
             if (productDetails.available_size && productDetails.available_size.value) {
                 console.log("Available Sizes Value:", productDetails.available_size.value); 
                 const sizesArray = productDetails.available_size.value.replace(/<ListValue: |[\[\]'>]/g, '').split(',').map(size => size.trim()).filter(size => size);
-                if (sizesArray.length > 0) {
-                    productDetailElement.innerHTML += '<h4>Available Sizes:</h4>';
-                    productDetailElement.innerHTML += `<p>${sizesArray.join(', ')}</p>`;
-                } else {
-                    productDetailElement.innerHTML += '<h4>Available Sizes:</h4><p>No sizes available.</p>';
-                }
+                productDetailElement.innerHTML += `<h4>Available Sizes:</h4><p>${sizesArray.join(', ') || 'No sizes available.'}</p>`;
+                
             }
                
                 // Image slider-----------------------------
@@ -92,12 +93,8 @@
                     }).filter(id => id);
 
                     const validImageUrls = imagesArray.map(id => constructImageUrl(id));
-                    createImageSlider(productDetailElement, validImageUrls);
+                    createImageSlider(productImageElement, validImageUrls);
                 }
-
-                
-       
-
             } else {
                 productDetailElement.innerHTML += '<p>No content available for this product.</p>';
             }
