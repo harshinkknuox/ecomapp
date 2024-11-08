@@ -9,7 +9,7 @@ from wagtail.models import Page
 
 PAGINATION_PER_PAGE = 10
 
-class ProductCategoryViewSet(viewsets.ModelViewSet):
+class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductPageSerializer
 
     def get_serializer_class(self):
@@ -22,17 +22,14 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = ProductPage.objects.live()
-        print("get_content,11111",queryset)
+
         name_filter = self.request.query_params.get('name')
         if name_filter:
             queryset = queryset.filter(title__icontains=name_filter)
 
         tag_filter = self.request.query_params.get('tag') 
-        print("tag_filter--------------", tag_filter)  
         if tag_filter:
-            print("inside tag filter--------------", tag_filter)
             tag_filter_list = [tag.strip() for tag in tag_filter.split(',')]
-
             filtered_products = []
             for product in queryset:
                 for block in product.content:
@@ -59,7 +56,7 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
             limit = int(request.GET.get('limit', PAGINATION_PER_PAGE))
             page = int(request.GET.get('page', 1))
             queryset = self.get_queryset()
-            print("listqurysett,",queryset)
+            
             if not queryset.exists():
                 return Response({"result": "failure", "message": "No products found."}, status=status.HTTP_404_NOT_FOUND)
 

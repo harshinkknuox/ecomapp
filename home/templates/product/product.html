@@ -58,7 +58,7 @@
                 const description = productDetails.description?.value || 'No description available.';
                 productDetailElement.innerHTML += `<p>${description}</p>`;
             
-                // category part
+            // category part
             if (productDetails.category && productDetails.category.value) {
             console.log("Category Value:", productDetails.category.value); 
             const category = productDetails.category.value.replace(/<ListValue: |[\[\]'>]/g, '').trim();
@@ -75,8 +75,6 @@
                 
             }
         
-
-                
              // available size---------------------
             if (productDetails.available_size && productDetails.available_size.value) {
                 console.log("Available Sizes Value:", productDetails.available_size.value); 
@@ -85,16 +83,16 @@
                 
             }
                
-                // Image slider-----------------------------
-                if (productDetails.images && productDetails.images.value) {
-                    const imagesArray = productDetails.images.value.split(',').map(img => {
-                        const match = img.match(/<Image: (.*?)>/);
-                        return match ? match[1].trim() : null;
-                    }).filter(id => id);
+            // Image slider-----------------------------
+            if (productDetails.images && productDetails.images.value) {
+                const imagesArray = productDetails.images.value.split(',').map(img => {
+                    const match = img.match(/<Image: (.*?)>/);
+                    return match ? match[1].trim() : null;
+                }).filter(id => id);
 
-                    const validImageUrls = imagesArray.map(id => constructImageUrl(id));
-                    createImageSlider(productImageElement, validImageUrls);
-                }
+                const validImageUrls = imagesArray.map(id => constructImageUrl(id));
+                createImageSlider(productImageElement, validImageUrls);
+            }
             } else {
                 productDetailElement.innerHTML += '<p>No content available for this product.</p>';
             }
@@ -228,7 +226,7 @@ right: 10px;
 
 
 h4 {
-margin-top: 20px; 
+margin-top: 10px; 
 }
 
 ul {

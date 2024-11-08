@@ -1,7 +1,7 @@
 from django.urls import path
-from .api import ProductCategoryViewSet
+from .api import ProductViewSet
 
 urlpatterns = [
-    path('products/', ProductCategoryViewSet.as_view({'get': 'list'}), name='product-list'),
-    path('products/<slug:slug>/', ProductCategoryViewSet.as_view({'get': 'retrieve'}), name='product-detail'),
+    path('products/', ProductViewSet.as_view({'get': 'list'}), name='product-list'),
+    path('products/<slug:slug>/', ProductViewSet.as_view({'get': 'retrieve'}), name='product-detail'),
 ]

@@ -1,0 +1,242 @@
+<script>
+    let nameFilters = [];
+    let tagFilters = [];
+    let selectedCategory = 'all';
+
+    // Fetch Categories and Initialize
+    async function fetchCategories() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/v2/category/category');
+            const data = await response.json();
+            populateCategoryDropdown(data.records || []);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    }
+
+    function populateCategoryDropdown(categories) {
+        const categoryList = document.getElementById('category-list');
+        categoryList.innerHTML = '<li><a href="#" data-value="all" onclick="filterByCategory(\'all\')">All Categories</a></li>';
+        categories.forEach(({ slug, title }) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" data-value="${slug}" onclick="filterByCategory('${slug}')">${title}</a>`;
+            categoryList.appendChild(li);
+        });
+    }
+
+    // Fetch and Display Products with Filters
+    async function fetchProductList() {
+        try {
+            const params = new URLSearchParams();
+            if (selectedCategory !== 'all') params.append('category', selectedCategory);
+            if (nameFilters.length) params.append('name', nameFilters.join(','));
+            if (tagFilters.length) params.append('tag', tagFilters.join(','));
+
+            const url = `http://127.0.0.1:8000/api/v2/product/products/?${params}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            displayProductList(data.records || []);
+        } catch (error) {
+            console.error('Error fetching product list:', error);
+            document.getElementById('card-container').innerHTML = '<p>No products available here. Comeback Later..!!!!</p>';
+        }
+    }
+
+    function displayProductList(products) {
+        const productList = document.getElementById('card-container');
+        productList.innerHTML = products.length ? products.map(createProductCard).join('') : '<p>No products available.</p>';
+    }
+
+    function createProductCard({ title = 'Untitled', content }) {
+        const productContent = content[0]?.fields || {};
+        const imageUrl = constructImageUrl(productContent.images?.value);
+        const availableSizeHtml = parseAvailableSize(productContent.available_size?.value || 'No Size available.');
+        const productSlug = title.replace(/\s+/g, '-').toLowerCase();
+        const categorySlug = (productContent.category?.value || '').toLowerCase();
+
+        return `
+            <div class="product-card">
+                <img src="${imageUrl}" alt="Product Image" class="product-image">
+                <h3 class="product-title" onclick="location.href='${getProductDetailsUrl(categorySlug, productSlug)}'">${title}</h3>
+                <p class="product-available-size">${availableSizeHtml}</p>
+            </div>
+        `;
+    }
+
+    // Filter Handlers
+    function filterByCategory(category) {
+        selectedCategory = category;
+        fetchProductList();
+        updateActiveCategory(category);
+    }
+
+    function filterByTags() {
+        tagFilters = getSelectedValues('#tag-checkboxes');
+        fetchProductList();
+    }
+
+    function filterByName() {
+        nameFilters = getSelectedValues('#name-checkboxes');
+        fetchProductList();
+    }
+
+    function getSelectedValues(selector) {
+        return Array.from(document.querySelectorAll(`${selector} input:checked`)).map(input => input.value);
+    }
+
+    function updateActiveCategory(category) {
+        document.querySelectorAll('#category-list a').forEach(link => link.classList.toggle('active', link.dataset.value === category));
+    }
+
+    // Utility Functions
+    function getProductDetailsUrl(categorySlug, productSlug) {
+        return `http://127.0.0.1:8000/${categorySlug}/${productSlug}/`;
+    }
+
+    function constructImageUrl(imagesValue) {
+        const imageId = (imagesValue?.match(/<Image: (.*?)>/) || [])[1];
+        return imageId ? `http://127.0.0.1:8000/media/original_images/${encodeURIComponent(imageId)}.jpg` : 'https://via.placeholder.com/300x150';
+    }
+
+    function parseAvailableSize(sizeString) {
+        const sizes = (sizeString.match(/\[(.*?)\]/) || [])[1]?.split(',').map(size => size.trim().replace(/['"]/g, ''));
+        return sizes ? `<strong>Available Sizes:</strong> ${sizes.join(', ')}` : sizeString;
+    }
+
+    // Initialize on Load
+    window.onload = function() {
+        fetchCategories();
+        fetchProductList();
+    };
+</script>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let nameFilters = [];
+    let tagFilters = [];
+    let selectedCategory = 'all';
+
+    // Fetch Categories and Initialize
+    function fetchCategories() {
+        $.ajax({
+            url: 'http://127.0.0.1:8000/api/v2/category/category',
+            method: 'GET',
+            success: function(data) {
+                populateCategoryDropdown(data.records || []);
+            },
+            error: function(error) {
+                console.error('Error fetching categories:', error);
+            }
+        });
+    }
+
+    function populateCategoryDropdown(categories) {
+        const categoryList = $('#category-list');
+        categoryList.html('<li><a href="#" data-value="all" onclick="filterByCategory(\'all\')">All Categories</a></li>');
+
+        categories.forEach(({ slug, title }) => {
+            const link = $(`<a href="#" data-value="${slug}">${title}</a>`);
+            link.on('click', function() { filterByCategory(slug); });
+            $('<li></li>').append(link).appendTo(categoryList);
+        });
+    }
+
+    // Fetch and Display Products with Filters
+    function fetchProductList() {
+        const params = {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined,
+            name: nameFilters.length ? nameFilters.join(',') : undefined,
+            tag: tagFilters.length ? tagFilters.join(',') : undefined
+        };
+
+        $.ajax({
+            url: 'http://127.0.0.1:8000/api/v2/product/products/',
+            method: 'GET',
+            data: params,
+            success: function(data) {
+                displayProductList(data.records || []);
+            },
+            error: function(error) {
+                console.error('Error fetching product list:', error);
+                $('#card-container').html('<p>No products available here. Comeback Later..!!!!</p>');
+            }
+        });
+    }
+
+    function displayProductList(products) {
+        const productList = $('#card-container');
+        productList.empty();
+
+        if (products.length === 0) {
+            productList.html('<p>No products available.</p>');
+            return;
+        }
+
+        products.forEach(product => {
+            const productContent = product.content[0]?.fields || {};
+            const imageUrl = constructImageUrl(productContent.images?.value);
+            const availableSizeHtml = parseAvailableSize(productContent.available_size?.value || 'No Size available.');
+            const productSlug = (product.title || 'Untitled').replace(/\s+/g, '-').toLowerCase();
+            const categorySlug = (productContent.category?.value || '').toLowerCase();
+
+            const productCard = `
+                <div class="product-card">
+                    <img src="${imageUrl}" alt="Product Image" class="product-image">
+                    <h3 class="product-title" onclick="location.href='${getProductDetailsUrl(categorySlug, productSlug)}'">${product.title || 'Untitled'}</h3>
+                    <p class="product-available-size">${availableSizeHtml}</p>
+                </div>
+            `;
+            productList.append(productCard);
+        });
+    }
+
+    // Filter Handlers
+    function filterByCategory(category) {
+        selectedCategory = category;
+        fetchProductList();
+        $('#category-list a').removeClass('active');
+        $(`#category-list a[data-value="${category}"]`).addClass('active');
+    }
+
+    function filterByTags() {
+        tagFilters = getCheckedValues('#tag-checkboxes');
+        fetchProductList();
+    }
+
+    function filterByName() {
+        nameFilters = getCheckedValues('#name-checkboxes');
+        fetchProductList();
+    }
+
+    function getCheckedValues(selector) {
+        return $(`${selector} input:checked`).map(function() {
+            return this.value;
+        }).get();
+    }
+
+    // Utility Functions
+    function getProductDetailsUrl(categorySlug, productSlug) {
+        return `http://127.0.0.1:8000/${categorySlug}/${productSlug}/`;
+    }
+
+    function constructImageUrl(imagesValue) {
+        const imageId = (imagesValue?.match(/<Image: (.*?)>/) || [])[1];
+        return imageId ? `http://127.0.0.1:8000/media/original_images/${encodeURIComponent(imageId)}.jpg` : 'https://via.placeholder.com/300x150';
+    }
+
+    function parseAvailableSize(sizeString) {
+        const sizes = (sizeString.match(/\[(.*?)\]/) || [])[1]?.split(',').map(size => size.trim().replace(/['"]/g, ''));
+        return sizes ? `<strong>Available Sizes:</strong> ${sizes.join(', ')}` : sizeString;
+    }
+
+    // Initialize on Load
+    $(document).ready(function() {
+        fetchCategories();
+        fetchProductList();
+        $('#tag-checkboxes input').on('change', filterByTags);
+        $('#name-checkboxes input').on('change', filterByName);
+    });
+</script>

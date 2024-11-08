@@ -211,9 +211,9 @@
         fetchProductList(selectedCategories);
     }
 
-    {% comment %} function getProductDetailsUrl(categorySlug, productSlug) {
+    function getProductDetailsUrl(categorySlug, productSlug) {
         return `http://127.0.0.1:8000/${categorySlug}/${productSlug}/`;
-    } {% endcomment %}
+    }
 
     function constructImageUrl(imageId) {
         return `http://127.0.0.1:8000/media/original_images/${encodeURIComponent(imageId)}.jpg`;
